@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
   <meta name="theme-color" content="#2b6cb0">
- <meta name="mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Таблица умножения">
   <link rel="manifest" href="manifest.json">
@@ -26,7 +26,6 @@
       align-items: center;
     }
 
-    /* главная карточка — резиновая */
     .app-card {
       width: 100%;
       max-width: 1200px;
@@ -63,7 +62,6 @@
       padding-bottom: 6px;
     }
 
-    /* панель выбора – гибкая */
     .selector-panel {
       background: #ffffffcc;
       backdrop-filter: blur(4px);
@@ -141,7 +139,6 @@
       text-align: center;
     }
 
-    /* обёртка таблицы с плавной прокруткой */
     .table-wrapper {
       overflow-x: auto;
       overflow-y: visible;
@@ -152,7 +149,6 @@
       scroll-behavior: smooth;
     }
 
-    /* сама таблица — адаптивные ячейки */
     .multiplication-table {
       border-collapse: collapse;
       width: 100%;
@@ -171,7 +167,6 @@
       white-space: nowrap;
     }
 
-    /* липкая шапка и первый столбец — удобно при скролле */
     .multiplication-table th {
       background: #eef3fc;
       color: #1f4a6e;
@@ -193,7 +188,6 @@
       backdrop-filter: blur(2px);
     }
 
-    /* подсветка зелёным (выбранные числа в шапке и первом столбце) */
     .green-highlight {
       background: #48bb78 !important;
       color: white !important;
@@ -202,7 +196,6 @@
       transition: all 0.15s;
     }
 
-    /* красный кружок для результата */
     .highlight-circle {
       background: #e53e3e !important;
       color: white !important;
@@ -212,7 +205,6 @@
       transform: scale(1.02);
     }
 
-    /* сенсорная обратная связь */
     .multiplication-table td {
       cursor: pointer;
       background: white;
@@ -223,7 +215,6 @@
       transform: scale(0.98);
     }
 
-    /* футер */
     .info-footer {
       text-align: center;
       margin-top: 20px;
@@ -236,7 +227,7 @@
       gap: 12px;
     }
 
-    .reset-btn {
+    .reset-btn, .install-btn {
       background: none;
       border: 1px solid #bdd3e8;
       padding: 8px 18px;
@@ -248,35 +239,25 @@
       cursor: pointer;
     }
 
-    .reset-btn:active {
-      background: #e2edf7;
+    .install-btn {
+      background: #2b6cb0;
+      border-color: #2b6cb0;
+      color: white;
+    }
+
+    .reset-btn:active, .install-btn:active {
       transform: scale(0.96);
     }
 
-    /* адаптация под поворот (landscape) */
     @media (orientation: landscape) and (max-height: 600px) {
-      .app-card {
-        padding: 12px 16px;
-      }
-      .selector-panel {
-        padding: 8px 12px;
-        gap: 12px;
-      }
-      .multiplication-table th,
-      .multiplication-table td {
-        padding: clamp(4px, 1.2vw, 10px) clamp(2px, 1vw, 6px);
-      }
-      .product-value {
-        padding: 2px 12px;
-      }
+      .app-card { padding: 12px 16px; }
+      .selector-panel { padding: 8px 12px; gap: 12px; }
+      .multiplication-table th, .multiplication-table td { padding: clamp(4px, 1.2vw, 10px) clamp(2px, 1vw, 6px); }
+      .product-value { padding: 2px 12px; }
     }
 
-    /* для очень узких экранов — чуть уменьшаем отступы */
     @media (max-width: 480px) {
-      .multiplication-table th,
-      .multiplication-table td {
-        padding: 6px 2px;
-      }
+      .multiplication-table th, .multiplication-table td { padding: 6px 2px; }
     }
   </style>
 </head>
@@ -307,9 +288,8 @@
 
   <div class="info-footer">
     <button id="resetSelectionBtn" class="reset-btn">⟳ Сбросить выбор</button>
-     <button id="installButton" style="display: none;">Установить приложение</button>
+    <button id="installButton" class="install-btn">📲 Установить приложение</button>
   </div>
- 
 </div>
 
 <script>
@@ -324,12 +304,10 @@
     const tableBody = document.getElementById('tableBody');
     const resetBtn = document.getElementById('resetSelectionBtn');
 
-    // ---------- генерация таблицы двойным циклом ----------
     function buildTable() {
       tableHead.innerHTML = '';
       tableBody.innerHTML = '';
 
-      // заголовки столбцов (множители B)
       const headRow = document.createElement('tr');
       const corner = document.createElement('th');
       corner.textContent = '×';
@@ -342,7 +320,6 @@
       }
       tableHead.appendChild(headRow);
 
-      // строки + ячейки с произведениями
       for (let row = MIN; row <= MAX; row++) {
         const tr = document.createElement('tr');
         const rowHead = document.createElement('td');
@@ -364,13 +341,10 @@
       }
     }
 
-    // ---------- подсветка зелёным (выбранные числа в заголовках) ----------
     function highlightGreen(a, b) {
-      // снять зелёный со всех
       document.querySelectorAll('#tableHeader th').forEach(th => th.classList.remove('green-highlight'));
       document.querySelectorAll('#multTable td:first-child').forEach(td => td.classList.remove('green-highlight'));
 
-      // подсветка столбца B (верхняя шапка)
       const headers = document.querySelectorAll('#tableHeader th');
       for (let th of headers) {
         if (th.textContent.trim() === String(b)) {
@@ -378,7 +352,6 @@
           break;
         }
       }
-      // подсветка строки A (первый столбец)
       const rowFirstCells = document.querySelectorAll('#multTable td:first-child');
       for (let cell of rowFirstCells) {
         if (cell.textContent.trim() === String(a)) {
@@ -388,7 +361,6 @@
       }
     }
 
-    // ---------- красный кружок на произведении a × b ----------
     function highlightRedProduct(a, b) {
       const allCells = document.querySelectorAll('#multTable td');
       allCells.forEach(cell => {
@@ -414,13 +386,11 @@
       }
     }
 
-    // полное обновление UI
     function refreshHighlights() {
       highlightGreen(currentA, currentB);
       highlightRedProduct(currentA, currentB);
     }
 
-    // заполнение селектов
     function fillSelects() {
       selectA.innerHTML = '';
       selectB.innerHTML = '';
@@ -438,7 +408,6 @@
       selectB.value = currentB;
     }
 
-    // обработчики
     function onSelectChange() {
       currentA = parseInt(selectA.value, 10);
       currentB = parseInt(selectB.value, 10);
@@ -453,9 +422,7 @@
       refreshHighlights();
     }
 
-    // клик по заголовкам для быстрого выбора
     function bindClickOnHeaders() {
-      // клик по шапке (столбцы)
       const headerThs = document.querySelectorAll('#tableHeader th');
       headerThs.forEach((th, idx) => {
         if (idx === 0) return;
@@ -468,7 +435,6 @@
           }
         });
       });
-      // клик по первому столбцу (строки)
       const rowFirsts = document.querySelectorAll('#multTable td:first-child');
       rowFirsts.forEach(td => {
         td.style.cursor = 'pointer';
@@ -482,9 +448,8 @@
       });
     }
 
-    // инициализация
     function init() {
-      buildTable();            // двойной цикл for
+      buildTable();
       fillSelects();
       selectA.addEventListener('change', onSelectChange);
       selectB.addEventListener('change', onSelectChange);
@@ -496,31 +461,49 @@
     init();
   })();
 </script>
+
 <script>
-  // Регистрация service worker (работает на GitHub Pages с реальным файлом sw.js)
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('./sw.js').then(reg=>console.log('✅ SW registered',reg.scope)).catch(err=>console.warn('SW error',err));
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('✅ SW registered', reg.scope))
+      .catch(err => console.warn('SW error', err));
   }
+
+  // Установка PWA через кнопку
   let deferredPrompt;
-const installBtn = document.getElementById('installButton');
+  const installBtn = document.getElementById('installButton');
 
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = 'block'; // Показываем кнопку
-});
-
-installBtn.addEventListener('click', async () => {
-  installBtn.style.display = 'none';
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`Результат: ${outcome}`);
-    deferredPrompt = null;
+  // Скрываем кнопку, если приложение уже запущено в режиме standalone
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'none';
+  } else {
+    installBtn.style.display = 'block';
   }
-});
-  
-</script>
 
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Не вызываем preventDefault, чтобы браузер мог показать свой баннер в дополнение
+    // Но сохраняем событие для ручного вызова из кнопки
+    deferredPrompt = e;
+    console.log('beforeinstallprompt перехвачено');
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      // Показываем диалог установки
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`Результат установки: ${outcome}`);
+      deferredPrompt = null;
+      // После установки (или отказа) кнопку можно скрыть
+      if (outcome === 'accepted') {
+        installBtn.style.display = 'none';
+      }
+    } else {
+      // Если событие ещё не произошло или не поддерживается
+      alert('Установка через браузер: откройте меню (три точки) и выберите "Установить приложение" или "Добавить на главный экран"');
+    }
+  });
+</script>
 </body>
 </html>
