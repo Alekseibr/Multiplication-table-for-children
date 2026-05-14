@@ -496,59 +496,15 @@
     init();
   })();
 </script>
-
 <script>
-  // ========== АВТОНОМНОЕ PWA (манифест + service worker генерируются динамически) ==========
-  (function setupPWA() {
-    // Динамически создаём манифест, если его нет на сервере
-    if (!document.querySelector('link[rel="manifest"][href="manifest.json"]')) return;
-    
-    const manifestObj = {
-      name: "Таблица умножения",
-      short_name: "Умножение",
-      description: "Интерактивная таблица Пифагора с подсветкой выбранных чисел и результата",
-      start_url: "/",
-      display: "standalone",
-      theme_color: "#2b6cb0",
-      background_color: "#f0f5fa",
-      icons: [
-        {
-          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232b6cb0'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='white' font-weight='bold'%3E✕%3C/text%3E%3C/svg%3E",
-          sizes: "any",
-          type: "image/svg+xml",
-          purpose: "any maskable"
-        },
-        {
-          src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAALTSURBVHgB7Z1NatwwFMd/kiV0k002XWSRTQ7QZbrpolB6gO6y7aKbQukBusu2iy4KpQfIpiFQw0xsye+DHkVGshzJkp8HvwcDtmRryO9/eo8BhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhvkPcPQA//4/fP748eP06fPnL2/fvr1N07S8efMGHg8PD49pmn49PT1dvLy8VD/P87uPHz/e3d3dVa/X68fdbnd4XdeHy+VSXC6XW/65XC5RVYo8/PPpr8PjUjRDk/ZlsL/fi8y/QGzTNM2vr68/z+fz/f39/f16vX6j3+223zH9fr+16/V6m2VZO51OszzPD+Px+JBl2WEymRyyLDscDofDZrPZz+fz/Ww2O8RxfEjiuI/j+KBer9ecJEnY6/Wa/X6/Ce8hjuMmfKYxkCzL2r1eL+r3+61er9fqdrutbrfbGg6HR1vO53MEnzmdTmfw/iBJkmYcx03dbrfRaDTqjUajDmM8HuM0SeM4huFw2Bj3+/0e/ldfUjgcDp31er0Gv9/v9x1fQ9RqtdJkMmlMJpPGeDxuTCaTho5pmuKd1ev1GryW7hOEUl0iSVgWr+/4eHx83I/1cF/neDyejmHY6/UW8/n89vHx8e5wOBzP5/NLlmW3+Xz+8vj4+L5er9/f3t4u1uv1arncvG632+/tdvs+Ho9/zufzxXq9fnt/f/94f3+/uVwuP5fL5et6vX5br9dvm83mbbPZvM1ms2f8/v7+9vr6erter39eX19/z+fzJ4j379/vBYPB4H00Gg2fYj6fP00mk6c4jh+fA0KO4/h5Pp9fPn78+Lnf77/i4+PjZblcfv7+/v4HYwAAAAAAAADgH/ELM/S4BrM0qRYAAAAASUVORK5CYII=",
-          sizes: "192x192",
-          type: "image/png"
-        }
-      ]
-    };
-    // если манифест не существует — создаём blob-ссылку и подменяем href
-    fetch('/manifest.json').catch(() => {
-      const blob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
-      const url = URL.createObjectURL(blob);
-      const link = document.querySelector('link[rel="manifest"]');
-      if (link) link.href = url;
-    });
-
-    // Service Worker с базовым кешированием
-    if ('serviceWorker' in navigator) {
-      const swCode = `self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
-      self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
-      self.addEventListener('fetch', event => {
-        event.respondWith(
-          fetch(event.request).catch(() => caches.match(event.request))
-        );
-      });`;
-      const swBlob = new Blob([swCode], {type: 'application/javascript'});
-      const swUrl = URL.createObjectURL(swBlob);
-      navigator.serviceWorker.register(swUrl).then(reg => {
-        console.log('✅ PWA Service Worker готов');
-      }).catch(err => console.warn('SW не зарегистрирован:', err));
-    }
-  })();
+  // Регистрация service worker (работает на GitHub Pages с реальным файлом sw.js)
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('/sw.js').then(reg=>console.log('✅ SW registered',reg.scope)).catch(err=>console.warn('SW error',err));
+  }
+  // Проверка возможности установки
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; console.log('📲 Можно установить приложение'); });
 </script>
+
 </body>
 </html>
