@@ -1,7 +1,8 @@
 {
   "name": "Таблица умножения",
   "short_name": "Умножение",
-  "start_url": "./",
+  "start_url": "/Multiplication-table-for-children/",
+  "scope": "/Multiplication-table-for-children/",
   "display": "standalone",
   "theme_color": "#2b6cb0",
   "background_color": "#f0f5fa",
