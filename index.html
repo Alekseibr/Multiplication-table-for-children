@@ -163,7 +163,7 @@
       border: 1px solid #d4e0ec;
       padding: clamp(6px, 2vw, 14px) clamp(3px, 1.5vw, 8px);
       text-align: center;
-      transition: all 0.1s ease;
+      transition: background 0.1s ease;
       white-space: nowrap;
     }
 
@@ -188,31 +188,35 @@
       backdrop-filter: blur(2px);
     }
 
+    /* Зелёное выделение шапки и первого столбца (не меняем размер) */
     .green-highlight {
       background: #48bb78 !important;
       color: white !important;
       font-weight: 800;
-      box-shadow: inset 0 1px 2px #ffffff70, 0 2px 8px rgba(0,0,0,0.1);
-      transition: all 0.15s;
+      transition: all 0.1s;
     }
 
-    .highlight-circle {
+    /* НОВЫЙ СТИЛЬ: выделение ячейки произведения — только фон, без увеличения */
+    .highlight-bg {
       background: #e53e3e !important;
       color: white !important;
-      border-radius: 50% !important;
       font-weight: 800;
-      box-shadow: 0 0 0 3px #fff3, 0 4px 12px rgba(229, 62, 62, 0.5);
-      transform: scale(1.02);
+      /* Гарантируем отсутствие любых трансформаций, скруглений и теней, которые могли бы изменить размер/форму */
+      transform: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
     }
 
-    .multiplication-table td {
-      cursor: pointer;
-      background: white;
-    }
-
-    .multiplication-table td:active:not(.highlight-circle) {
+    /* Убираем трансформацию при клике для всех ячеек, чтобы размеры не менялись даже временно */
+    .multiplication-table td:active {
       background: #d9e6f5;
-      transform: scale(0.98);
+      transform: none;
+    }
+
+    /* Для ячеек с выделением фона не меняем поведение при клике */
+    .multiplication-table td.highlight-bg:active {
+      background: #e53e3e !important;
+      transform: none;
     }
 
     .info-footer {
@@ -361,13 +365,15 @@
       }
     }
 
-    function highlightRedProduct(a, b) {
+    // Новая версия: закрашивание фона ячейки без изменения размеров и круга
+    function highlightProductCell(a, b) {
+      // Удаляем старый класс highlight-bg со всех ячеек
       const allCells = document.querySelectorAll('#multTable td');
       allCells.forEach(cell => {
-        cell.classList.remove('highlight-circle');
-        cell.style.borderRadius = '';
+        cell.classList.remove('highlight-bg');
       });
 
+      // Ищем нужную ячейку по data-a и data-b
       let target = null;
       for (let cell of allCells) {
         const aVal = cell.getAttribute('data-a');
@@ -377,9 +383,10 @@
           break;
         }
       }
+      
       if (target) {
-        target.classList.add('highlight-circle');
-        target.style.borderRadius = '50%';
+        // Просто добавляем класс, который закрашивает фон и не изменяет размеры
+        target.classList.add('highlight-bg');
         productSpan.textContent = a * b;
       } else {
         productSpan.textContent = '?';
@@ -388,7 +395,7 @@
 
     function refreshHighlights() {
       highlightGreen(currentA, currentB);
-      highlightRedProduct(currentA, currentB);
+      highlightProductCell(currentA, currentB);
     }
 
     function fillSelects() {
@@ -482,8 +489,7 @@
   }
 
   window.addEventListener('beforeinstallprompt', (e) => {
-    // Не вызываем preventDefault, чтобы браузер мог показать свой баннер в дополнение
-    // Но сохраняем событие для ручного вызова из кнопки
+    // Сохраняем событие для ручного вызова из кнопки
     deferredPrompt = e;
     console.log('beforeinstallprompt перехвачено');
   });
@@ -495,7 +501,6 @@
       const { outcome } = await deferredPrompt.userChoice;
       console.log(`Результат установки: ${outcome}`);
       deferredPrompt = null;
-      // После установки (или отказа) кнопку можно скрыть
       if (outcome === 'accepted') {
         installBtn.style.display = 'none';
       }
