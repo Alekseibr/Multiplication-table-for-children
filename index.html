@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
   <meta name="theme-color" content="#2b6cb0">
-  <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Таблица умножения">
   <link rel="manifest" href="manifest.json">
@@ -307,7 +307,9 @@
 
   <div class="info-footer">
     <button id="resetSelectionBtn" class="reset-btn">⟳ Сбросить выбор</button>
+     <button id="installButton" style="display: none;">Установить приложение</button>
   </div>
+ 
 </div>
 
 <script>
@@ -499,6 +501,24 @@
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./sw.js').then(reg=>console.log('✅ SW registered',reg.scope)).catch(err=>console.warn('SW error',err));
   }
+  let deferredPrompt;
+const installBtn = document.getElementById('installButton');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = 'block'; // Показываем кнопку
+});
+
+installBtn.addEventListener('click', async () => {
+  installBtn.style.display = 'none';
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`Результат: ${outcome}`);
+    deferredPrompt = null;
+  }
+});
   
 </script>
 
