@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+  <meta name="theme-color" content="#2b6cb0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Таблица умножения">
+  <link rel="manifest" href="manifest.json">
+  <title>Таблица умножения • Адаптивная</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+      background: linear-gradient(145deg, #f0f5fa 0%, #e2eaf2 100%);
+      margin: 0;
+      padding: 12px;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* главная карточка — резиновая */
+    .app-card {
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.05);
+      padding: 20px 16px 28px;
+      transition: all 0.2s;
+    }
+
+    h1 {
+      font-size: clamp(1.5rem, 6vw, 2.2rem);
+      font-weight: 800;
+      text-align: center;
+      margin: 0 0 4px;
+      background: linear-gradient(135deg, #1a3c5c, #2c5282);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+
+    .sub {
+      text-align: center;
+      color: #4a627a;
+      font-size: clamp(0.7rem, 3vw, 0.85rem);
+      margin-bottom: 18px;
+      border-bottom: 1px solid #cbd5e0;
+      display: inline-block;
+      width: auto;
+      margin-left: auto;
+      margin-right: auto;
+      padding-bottom: 6px;
+    }
+
+    /* панель выбора – гибкая */
+    .selector-panel {
+      background: #ffffffcc;
+      backdrop-filter: blur(4px);
+      border-radius: 20px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+
+    .selector-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f0f4fa;
+      padding: 5px 16px;
+      border-radius: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .selector-item label {
+      font-weight: 600;
+      color: #1f4a6e;
+      font-size: clamp(0.85rem, 3.5vw, 1rem);
+    }
+
+    select {
+      background: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: clamp(0.9rem, 4vw, 1.2rem);
+      color: #0f2b3f;
+      outline: none;
+      cursor: pointer;
+      font-family: monospace;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: 0.1s linear;
+    }
+
+    select:active {
+      transform: scale(0.97);
+    }
+
+    .product-badge {
+      background: #e9edf2;
+      border-radius: 10px;
+      padding: 5px 20px;
+      font-weight: 600;
+      font-size: clamp(1rem, 4vw, 1.3rem);
+      font-family: monospace;
+      color: #2c5282;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .product-value {
+      background: #2b4c7c;
+      color: white;
+      border-radius: 10px;
+      padding: 4px 18px;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+      font-weight: 800;
+      min-width: 70px;
+      text-align: center;
+    }
+
+    /* обёртка таблицы с плавной прокруткой */
+    .table-wrapper {
+      overflow-x: auto;
+      overflow-y: visible;
+      margin-top: 16px;
+      background: white;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+      -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+    }
+
+    /* сама таблица — адаптивные ячейки */
+    .multiplication-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-family: 'Courier New', 'SF Mono', monospace;
+      font-weight: 500;
+      font-size: clamp(0.75rem, 3.2vw, 1rem);
+      min-width: 320px;
+    }
+
+    .multiplication-table th,
+    .multiplication-table td {
+      border: 1px solid #d4e0ec;
+      padding: clamp(6px, 2vw, 14px) clamp(3px, 1.5vw, 8px);
+      text-align: center;
+      transition: all 0.1s ease;
+      white-space: nowrap;
+    }
+
+    /* липкая шапка и первый столбец — удобно при скролле */
+    .multiplication-table th {
+      background: #eef3fc;
+      color: #1f4a6e;
+      font-weight: 800;
+      font-size: clamp(0.85rem, 3.5vw, 1.1rem);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(2px);
+    }
+
+    .multiplication-table td:first-child {
+      background: #eef3fc;
+      font-weight: 800;
+      color: #1f4a6e;
+      position: sticky;
+      left: 0;
+      z-index: 5;
+      backdrop-filter: blur(2px);
+    }
+
+    /* подсветка зелёным (выбранные числа в шапке и первом столбце) */
+    .green-highlight {
+      background: #48bb78 !important;
+      color: white !important;
+      font-weight: 800;
+      box-shadow: inset 0 1px 2px #ffffff70, 0 2px 8px rgba(0,0,0,0.1);
+      transition: all 0.15s;
+    }
+
+    /* красный кружок для результата */
+    .highlight-circle {
+      background: #e53e3e !important;
+      color: white !important;
+      border-radius: 50% !important;
+      font-weight: 800;
+      box-shadow: 0 0 0 3px #fff3, 0 4px 12px rgba(229, 62, 62, 0.5);
+      transform: scale(1.02);
+    }
+
+    /* сенсорная обратная связь */
+    .multiplication-table td {
+      cursor: pointer;
+      background: white;
+    }
+
+    .multiplication-table td:active:not(.highlight-circle) {
+      background: #d9e6f5;
+      transform: scale(0.98);
+    }
+
+    /* футер */
+    .info-footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: clamp(0.6rem, 3vw, 0.75rem);
+      color: #4a627a;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .reset-btn {
+      background: none;
+      border: 1px solid #bdd3e8;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: clamp(0.7rem, 3vw, 0.8rem);
+      font-weight: 500;
+      color: #2d4a6e;
+      transition: 0.1s;
+      cursor: pointer;
+    }
+
+    .reset-btn:active {
+      background: #e2edf7;
+      transform: scale(0.96);
+    }
+
+    /* адаптация под поворот (landscape) */
+    @media (orientation: landscape) and (max-height: 600px) {
+      .app-card {
+        padding: 12px 16px;
+      }
+      .selector-panel {
+        padding: 8px 12px;
+        gap: 12px;
+      }
+      .multiplication-table th,
+      .multiplication-table td {
+        padding: clamp(4px, 1.2vw, 10px) clamp(2px, 1vw, 6px);
+      }
+      .product-value {
+        padding: 2px 12px;
+      }
+    }
+
+    /* для очень узких экранов — чуть уменьшаем отступы */
+    @media (max-width: 480px) {
+      .multiplication-table th,
+      .multiplication-table td {
+        padding: 6px 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app-card">
+  <h1>📐 Таблица умножения</h1>
+  <div style="text-align: center">
+
+  <div class="selector-panel">
+    <div class="selector-item">
+      <label>🧮 Число A</label>
+      <select id="num1Select" aria-label="Первый множитель"></select>
+    </div>
+    <div class="selector-item">
+      <label>✖️ Число B</label>
+      <select id="num2Select" aria-label="Второй множитель"></select>
+    </div>
+    <div class="product-badge">
+      <span>Результат:</span>
+      <span id="productPreview" class="product-value">—</span>
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="multiplication-table" id="multTable">
+      <thead id="tableHeader"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+
+  <div class="info-footer">
+    <button id="resetSelectionBtn" class="reset-btn">⟳ Сбросить выбор</button>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const MIN = 1, MAX = 10;
+    let currentA = 2, currentB = 3;
+
+    const selectA = document.getElementById('num1Select');
+    const selectB = document.getElementById('num2Select');
+    const productSpan = document.getElementById('productPreview');
+    const tableHead = document.getElementById('tableHeader');
+    const tableBody = document.getElementById('tableBody');
+    const resetBtn = document.getElementById('resetSelectionBtn');
+
+    // ---------- генерация таблицы двойным циклом ----------
+    function buildTable() {
+      tableHead.innerHTML = '';
+      tableBody.innerHTML = '';
+
+      // заголовки столбцов (множители B)
+      const headRow = document.createElement('tr');
+      const corner = document.createElement('th');
+      corner.textContent = '×';
+      headRow.appendChild(corner);
+      for (let col = MIN; col <= MAX; col++) {
+        const th = document.createElement('th');
+        th.textContent = col;
+        th.setAttribute('data-col', col);
+        headRow.appendChild(th);
+      }
+      tableHead.appendChild(headRow);
+
+      // строки + ячейки с произведениями
+      for (let row = MIN; row <= MAX; row++) {
+        const tr = document.createElement('tr');
+        const rowHead = document.createElement('td');
+        rowHead.textContent = row;
+        rowHead.setAttribute('data-row', row);
+        rowHead.style.fontWeight = 'bold';
+        tr.appendChild(rowHead);
+
+        for (let col = MIN; col <= MAX; col++) {
+          const product = row * col;
+          const td = document.createElement('td');
+          td.textContent = product;
+          td.setAttribute('data-a', row);
+          td.setAttribute('data-b', col);
+          td.setAttribute('data-prod', product);
+          tr.appendChild(td);
+        }
+        tableBody.appendChild(tr);
+      }
+    }
+
+    // ---------- подсветка зелёным (выбранные числа в заголовках) ----------
+    function highlightGreen(a, b) {
+      // снять зелёный со всех
+      document.querySelectorAll('#tableHeader th').forEach(th => th.classList.remove('green-highlight'));
+      document.querySelectorAll('#multTable td:first-child').forEach(td => td.classList.remove('green-highlight'));
+
+      // подсветка столбца B (верхняя шапка)
+      const headers = document.querySelectorAll('#tableHeader th');
+      for (let th of headers) {
+        if (th.textContent.trim() === String(b)) {
+          th.classList.add('green-highlight');
+          break;
+        }
+      }
+      // подсветка строки A (первый столбец)
+      const rowFirstCells = document.querySelectorAll('#multTable td:first-child');
+      for (let cell of rowFirstCells) {
+        if (cell.textContent.trim() === String(a)) {
+          cell.classList.add('green-highlight');
+          break;
+        }
+      }
+    }
+
+    // ---------- красный кружок на произведении a × b ----------
+    function highlightRedProduct(a, b) {
+      const allCells = document.querySelectorAll('#multTable td');
+      allCells.forEach(cell => {
+        cell.classList.remove('highlight-circle');
+        cell.style.borderRadius = '';
+      });
+
+      let target = null;
+      for (let cell of allCells) {
+        const aVal = cell.getAttribute('data-a');
+        const bVal = cell.getAttribute('data-b');
+        if (aVal && bVal && parseInt(aVal) === a && parseInt(bVal) === b) {
+          target = cell;
+          break;
+        }
+      }
+      if (target) {
+        target.classList.add('highlight-circle');
+        target.style.borderRadius = '50%';
+        productSpan.textContent = a * b;
+      } else {
+        productSpan.textContent = '?';
+      }
+    }
+
+    // полное обновление UI
+    function refreshHighlights() {
+      highlightGreen(currentA, currentB);
+      highlightRedProduct(currentA, currentB);
+    }
+
+    // заполнение селектов
+    function fillSelects() {
+      selectA.innerHTML = '';
+      selectB.innerHTML = '';
+      for (let i = MIN; i <= MAX; i++) {
+        const optA = document.createElement('option');
+        optA.value = i;
+        optA.textContent = i;
+        const optB = document.createElement('option');
+        optB.value = i;
+        optB.textContent = i;
+        selectA.appendChild(optA);
+        selectB.appendChild(optB);
+      }
+      selectA.value = currentA;
+      selectB.value = currentB;
+    }
+
+    // обработчики
+    function onSelectChange() {
+      currentA = parseInt(selectA.value, 10);
+      currentB = parseInt(selectB.value, 10);
+      refreshHighlights();
+    }
+
+    function resetSelection() {
+      currentA = 2;
+      currentB = 3;
+      selectA.value = currentA;
+      selectB.value = currentB;
+      refreshHighlights();
+    }
+
+    // клик по заголовкам для быстрого выбора
+    function bindClickOnHeaders() {
+      // клик по шапке (столбцы)
+      const headerThs = document.querySelectorAll('#tableHeader th');
+      headerThs.forEach((th, idx) => {
+        if (idx === 0) return;
+        th.style.cursor = 'pointer';
+        th.addEventListener('click', () => {
+          const val = parseInt(th.textContent, 10);
+          if (!isNaN(val)) {
+            selectB.value = val;
+            selectB.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+      // клик по первому столбцу (строки)
+      const rowFirsts = document.querySelectorAll('#multTable td:first-child');
+      rowFirsts.forEach(td => {
+        td.style.cursor = 'pointer';
+        td.addEventListener('click', () => {
+          const val = parseInt(td.textContent, 10);
+          if (!isNaN(val)) {
+            selectA.value = val;
+            selectA.dispatchEvent(new Event('change'));
+          }
+        });
+      });
+    }
+
+    // инициализация
+    function init() {
+      buildTable();            // двойной цикл for
+      fillSelects();
+      selectA.addEventListener('change', onSelectChange);
+      selectB.addEventListener('change', onSelectChange);
+      resetBtn.addEventListener('click', resetSelection);
+      refreshHighlights();
+      bindClickOnHeaders();
+    }
+
+    init();
+  })();
+</script>
+
+<script>
+  // ========== АВТОНОМНОЕ PWA (манифест + service worker генерируются динамически) ==========
+  (function setupPWA() {
+    // Динамически создаём манифест, если его нет на сервере
+    if (!document.querySelector('link[rel="manifest"][href="manifest.json"]')) return;
+    
+    const manifestObj = {
+      name: "Таблица умножения",
+      short_name: "Умножение",
+      description: "Интерактивная таблица Пифагора с подсветкой выбранных чисел и результата",
+      start_url: "/",
+      display: "standalone",
+      theme_color: "#2b6cb0",
+      background_color: "#f0f5fa",
+      icons: [
+        {
+          src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%232b6cb0'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='white' font-weight='bold'%3E✕%3C/text%3E%3C/svg%3E",
+          sizes: "any",
+          type: "image/svg+xml",
+          purpose: "any maskable"
+        },
+        {
+          src: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAALTSURBVHgB7Z1NatwwFMd/kiV0k002XWSRTQ7QZbrpolB6gO6y7aKbQukBusu2iy4KpQfIpiFQw0xsye+DHkVGshzJkp8HvwcDtmRryO9/eo8BhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhmEYhvkPcPQA//4/fP748eP06fPnL2/fvr1N07S8efMGHg8PD49pmn49PT1dvLy8VD/P87uPHz/e3d3dVa/X68fdbnd4XdeHy+VSXC6XW/65XC5RVYo8/PPpr8PjUjRDk/ZlsL/fi8y/QGzTNM2vr68/z+fz/f39/f16vX6j3+223zH9fr+16/V6m2VZO51OszzPD+Px+JBl2WEymRyyLDscDofDZrPZz+fz/Ww2O8RxfEjiuI/j+KBer9ecJEnY6/Wa/X6/Ce8hjuMmfKYxkCzL2r1eL+r3+61er9fqdrutbrfbGg6HR1vO53MEnzmdTmfw/iBJkmYcx03dbrfRaDTqjUajDmM8HuM0SeM4huFw2Bj3+/0e/ldfUjgcDp31er0Gv9/v9x1fQ9RqtdJkMmlMJpPGeDxuTCaTho5pmuKd1ev1GryW7hOEUl0iSVgWr+/4eHx83I/1cF/neDyejmHY6/UW8/n89vHx8e5wOBzP5/NLlmW3+Xz+8vj4+L5er9/f3t4u1uv1arncvG632+/tdvs+Ho9/zufzxXq9fnt/f/94f3+/uVwuP5fL5et6vX5br9dvm83mbbPZvM1ms2f8/v7+9vr6erter39eX19/z+fzJ4j379/vBYPB4H00Gg2fYj6fP00mk6c4jh+fA0KO4/h5Pp9fPn78+Lnf77/i4+PjZblcfv7+/v4HYwAAAAAAAADgH/ELM/S4BrM0qRYAAAAASUVORK5CYII=",
+          sizes: "192x192",
+          type: "image/png"
+        }
+      ]
+    };
+    // если манифест не существует — создаём blob-ссылку и подменяем href
+    fetch('/manifest.json').catch(() => {
+      const blob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
+      const url = URL.createObjectURL(blob);
+      const link = document.querySelector('link[rel="manifest"]');
+      if (link) link.href = url;
+    });
+
+    // Service Worker с базовым кешированием
+    if ('serviceWorker' in navigator) {
+      const swCode = `self.addEventListener('install', event => event.waitUntil(self.skipWaiting()));
+      self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
+      self.addEventListener('fetch', event => {
+        event.respondWith(
+          fetch(event.request).catch(() => caches.match(event.request))
+        );
+      });`;
+      const swBlob = new Blob([swCode], {type: 'application/javascript'});
+      const swUrl = URL.createObjectURL(swBlob);
+      navigator.serviceWorker.register(swUrl).then(reg => {
+        console.log('✅ PWA Service Worker готов');
+      }).catch(err => console.warn('SW не зарегистрирован:', err));
+    }
+  })();
+</script>
+</body>
+</html>
