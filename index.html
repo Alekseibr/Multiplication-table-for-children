@@ -283,8 +283,6 @@
 <body>
 <div class="app-card">
   <h1>📐 Таблица умножения</h1>
-  <div style="text-align: center">
-
   <div class="selector-panel">
     <div class="selector-item">
       <label>🧮 Число A</label>
@@ -499,7 +497,7 @@
 <script>
   // Регистрация service worker (работает на GitHub Pages с реальным файлом sw.js)
   if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('/sw.js').then(reg=>console.log('✅ SW registered',reg.scope)).catch(err=>console.warn('SW error',err));
+    navigator.serviceWorker.register('./sw.js').then(reg=>console.log('✅ SW registered',reg.scope)).catch(err=>console.warn('SW error',err));
   }
   // Проверка возможности установки
   let deferredPrompt;
