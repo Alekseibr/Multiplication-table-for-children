@@ -499,9 +499,7 @@
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('./sw.js').then(reg=>console.log('✅ SW registered',reg.scope)).catch(err=>console.warn('SW error',err));
   }
-  // Проверка возможности установки
-  let deferredPrompt;
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; console.log('📲 Можно установить приложение'); });
+  
 </script>
 
 </body>
